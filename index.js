@@ -36,6 +36,31 @@ async function run() {
       res.send(result);
     });
 
+    // Tasks API: Add a new task
+    app.post('/tasks', async (req, res) => {
+      const newTask = req.body;
+
+      try {
+        const result = await tasksCollection.insertOne(newTask);
+        console.log('New task added:', newTask);
+
+        // The issue may be in the next line, accessing 'ops' property of 'result'
+        res.status(201).json(result.ops[0]);
+      } catch (error) {
+        console.error('Error adding new task:', error);
+        res.status(500).json({ error: 'Failed to add a new task' });
+      }
+    });
+
+    // Task deletion
+    app.delete('/tasks/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await tasksCollection.deleteOne(query);
+      res.send(result);
+    })
+
+
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
